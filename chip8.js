@@ -1,7 +1,7 @@
 // Welcome! This is a JS CHIP-8 interpreter
 // by Luís Mendes - 12/Dec/2018
 
-import Audio from './audio';
+import Audio from './audio.js';
 
 export default class Chip8 {
     constructor (video, keyboard) {
