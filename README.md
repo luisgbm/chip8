@@ -8,6 +8,6 @@ According to [Wikipedia](https://en.wikipedia.org/wiki/CHIP-8),
 
 🎮 **Test it online now with Pong**: https://luisgbm.github.io/chip8/
 
-*remember to allow audio in the site's settings to able to listen to all the glorious beeps*
+*Remember to use a modern browser and allow audio in the site's settings to able to listen to all the glorious beeps!*
 
 I put some more programs in the programs.txt file, you should be able to load them by editing the index.html file.
