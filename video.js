@@ -1,14 +1,9 @@
 export default class Video {
-    canvasWidth = 640;
-    width = null;
-    canvasHeight = 320;
-    height = null;
-    pixelSize = 10;
-    canvasId = 'canvas';
-    domCanvas = null;
-    canvasCtx = null;
-
     constructor(canvasId) {
+        this.canvasWidth = 640;
+        this.canvasHeight = 320;
+        this.pixelSize = 10;
+                
         this.width = this.canvasWidth / this.pixelSize;
         this.height = this.canvasHeight / this.pixelSize;
 
