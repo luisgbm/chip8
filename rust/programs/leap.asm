@@ -10,7 +10,7 @@
 ;      keypad 6 (host E) ... walk right
 ;      keypad 5 (host W) ... jump
 ;
-;  Assemble with:  python tools/asm.py programs/leap.asm roms/leap.ch8
+;  Assemble with:  cargo run --bin asm -- programs/leap.asm roms/leap.ch8
 ;
 ;  Registers
 ;      V0, V1  scratch

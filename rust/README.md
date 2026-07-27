@@ -135,11 +135,11 @@ Everything — the emulator screen, the menu, the status bar — is drawn into o
 texture once a frame, which is the same shape the JavaScript version had with
 its canvas.
 
-The programs from the JavaScript version were converted from the byte arrays in
-`../programs.txt` into `.ch8` files by
-[`tools/extract_roms.py`](tools/extract_roms.py); the two written for this port
-are assembled from [`programs/`](programs). Either way they are compiled into
-the executable with `include_bytes!`.
+The programs from the JavaScript version are the byte arrays in
+[`../programs.txt`](../programs.txt), converted once into the `.ch8` files in
+[`roms/`](roms); the two written for this port are assembled from
+[`programs/`](programs). Either way they are compiled into the executable with
+`include_bytes!`.
 
 ## Screenshots
 

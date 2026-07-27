@@ -1,8 +1,8 @@
 //! The programs bundled with the interpreter.
 //!
 //! Most of these are the programs the JavaScript version listed in
-//! `../programs.txt`, converted from JavaScript byte arrays into `.ch8` files
-//! by `tools/extract_roms.py`. The rest were written for this port and live as
+//! `../programs.txt`, converted once from its JavaScript byte arrays into the
+//! `.ch8` files in `roms/`. The rest were written for this port and live as
 //! assembly in `programs/`, built by `cargo run --bin asm`. Either way they are
 //! compiled straight into the executable.
 
