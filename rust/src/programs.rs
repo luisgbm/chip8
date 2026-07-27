@@ -1,8 +1,10 @@
 //! The programs bundled with the interpreter.
 //!
-//! These are the same programs the JavaScript version listed in
+//! Most of these are the programs the JavaScript version listed in
 //! `../programs.txt`, converted from JavaScript byte arrays into `.ch8` files
-//! by `tools/extract_roms.py` and compiled straight into the executable.
+//! by `tools/extract_roms.py`. The rest were written for this port and live as
+//! assembly in `programs/`, built by `cargo run --bin asm`. Either way they are
+//! compiled straight into the executable.
 
 /// What a program is for, shown next to its name in the menu.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -43,6 +45,14 @@ pub const DEFAULT_CYCLES_PER_FRAME: u32 = 10;
 /// Every bundled program, in menu order.
 pub const BUILTIN_PROGRAMS: &[BuiltinProgram] = &[
     BuiltinProgram {
+        name: "Leap",
+        category: Category::Game,
+        description: "Jump the pit in the middle of the floor. Miss it and the fall is fatal.",
+        controls: Some("Q walk left, E walk right, W jump"),
+        cycles_per_frame: 60,
+        rom: include_bytes!("../roms/leap.ch8"),
+    },
+    BuiltinProgram {
         name: "Pong",
         category: Category::Game,
         description: "Two player tennis, the program the JavaScript version booted into.",
@@ -81,6 +91,14 @@ pub const BUILTIN_PROGRAMS: &[BuiltinProgram] = &[
         controls: None,
         cycles_per_frame: DEFAULT_CYCLES_PER_FRAME,
         rom: include_bytes!("../roms/ibm_logo.ch8"),
+    },
+    BuiltinProgram {
+        name: "ABC 123",
+        category: Category::Demo,
+        description: "Writes ABC123 with the built in font, the example from programs/TUTORIAL.md.",
+        controls: None,
+        cycles_per_frame: DEFAULT_CYCLES_PER_FRAME,
+        rom: include_bytes!("../roms/abc123.ch8"),
     },
     BuiltinProgram {
         name: "Next",

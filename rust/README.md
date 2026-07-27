@@ -4,10 +4,11 @@ A Rust port of the JavaScript CHIP-8 interpreter in the repository root, running
 on SDL2 instead of the browser.
 
 It starts on an intro screen that lists every program from
-[`../programs.txt`](../programs.txt), compiled into the executable, and can also
-run a `.ch8` file from disk. The interpreter itself lives in
-[`src/cpu.rs`](src/cpu.rs) and has no I/O in it at all: it owns its memory,
-registers and framebuffer, and the front end reads them once a frame.
+[`../programs.txt`](../programs.txt), compiled into the executable, plus two
+written for this port in [`programs/`](programs), and can also run a `.ch8` file
+from disk. The interpreter itself lives in [`src/cpu.rs`](src/cpu.rs) and has no
+I/O in it at all: it owns its memory, registers and framebuffer, and the front
+end reads them once a frame.
 
 ## Running
 
@@ -55,6 +56,42 @@ the JavaScript version used.
 > one. `index.html` named `1`/`4` and `F`/`Z` because its keypad was misnumbered
 > — see below.
 
+## Writing a program
+
+The port comes with an assembler, so programs can be written as text instead of
+hand-assembled bytes:
+
+```sh
+cargo run --bin asm -- programs/leap.asm roms/leap.ch8
+cargo run --bin asm -- programs/leap.asm roms/leap.ch8 --listing
+```
+
+`--listing` prints the address and the bytes next to each line, which is the
+quickest way to see what an instruction turned into. It accepts the 35 original
+CHIP-8 opcodes and nothing else, so a program that assembles will run on any
+interpreter.
+
+**[`programs/TUTORIAL.md`](programs/TUTORIAL.md) is the place to start.** It
+builds a program that writes `ABC123` on the screen with the interpreter's
+built-in font, one instruction at a time, and ends with a syntax reference and
+the full opcode table.
+
+| Program                                    | What it is                          |
+|--------------------------------------------|-------------------------------------|
+| [`programs/abc123.asm`](programs/abc123.asm) | The tutorial's worked example, 34 bytes |
+| [`programs/leap.asm`](programs/leap.asm)   | *Leap*, the bundled game            |
+
+*Leap* is a side-on platformer: a floor with a pit in the middle, and a
+character who walks with `Q` and `E` and jumps with `W`. Land in the pit and he
+drops out of sight, `GAME OVER` appears, and the game starts again. It is
+written entirely in the standard instruction set — the jump arc comes from a
+half-pixel Y coordinate and gravity applied every other tick, since CHIP-8 has
+no fractions.
+
+The assembler is a library as well as a binary, so
+[`tests/asm.rs`](tests/asm.rs) can check that the committed `.ch8` files still
+match their sources.
+
 ## SDL2
 
 `cargo` does not build SDL2 from source here, so a prebuilt **SDL2 2.32.10
@@ -89,21 +126,26 @@ The modules mirror the JavaScript files one for one.
 
 [`src/font.rs`](src/font.rs) and [`src/theme.rs`](src/theme.rs) have no
 counterpart: the browser drew the interface with HTML and CSS, so the port
-carries its own 5x7 bitmap font and palette.
+carries its own 5x7 bitmap font and palette. Neither has
+[`src/asm.rs`](src/asm.rs), the assembler, which is exposed as a binary by
+[`src/bin/asm.rs`](src/bin/asm.rs).
 
 Everything — the emulator screen, the menu, the status bar — is drawn into one
 `0x00RRGGBB` buffer at window resolution and uploaded to a single streaming
 texture once a frame, which is the same shape the JavaScript version had with
 its canvas.
 
-The programs were converted from the JavaScript byte arrays in
+The programs from the JavaScript version were converted from the byte arrays in
 `../programs.txt` into `.ch8` files by
-[`tools/extract_roms.py`](tools/extract_roms.py) and are compiled into the
-executable with `include_bytes!`.
+[`tools/extract_roms.py`](tools/extract_roms.py); the two written for this port
+are assembled from [`programs/`](programs). Either way they are compiled into
+the executable with `include_bytes!`.
 
 ## Screenshots
 
 ![The intro screen](screenshots/menu.png)
+
+![Leap](screenshots/leap.png)
 
 ![Space Invaders](screenshots/space-invaders.png)
 
@@ -123,8 +165,11 @@ cargo test
 ```
 
 [`tests/cpu.rs`](tests/cpu.rs) covers the instruction set, with a bias towards
-the behaviour the JavaScript version got wrong, and
-[`tests/programs.rs`](tests/programs.rs) loads and runs every bundled program.
+the behaviour the JavaScript version got wrong,
+[`tests/programs.rs`](tests/programs.rs) loads and runs every bundled program,
+[`tests/asm.rs`](tests/asm.rs) checks the committed ROMs against their assembly,
+and [`tests/leap.rs`](tests/leap.rs) plays the game with scripted key presses
+and reads the result out of the framebuffer.
 
 ## Differences from the JavaScript version
 
@@ -164,6 +209,8 @@ the behaviour the JavaScript version got wrong, and
 
 * An intro screen, so programs no longer have to be chosen by editing a source
   file.
+* An assembler, and two programs written with it: a game and the tutorial's
+  example.
 * Programs can be loaded from disk: from the command line, from the file
   prompt, or by dropping a file onto the window.
 * The interpreter can be paused, restarted and sped up or slowed down while it

@@ -19,6 +19,10 @@ It bundles every program from `programs.txt` behind an intro screen, can load
 `.ch8` files from disk, and fixes a handful of bugs this JavaScript version
 carries — see [`rust/README.md`](rust/README.md).
 
+It also comes with an assembler and a game written with it, *Leap*. If you want
+to write a CHIP-8 program yourself, start at
+[`rust/programs/TUTORIAL.md`](rust/programs/TUTORIAL.md).
+
 ```sh
 cd rust
 cargo run --release

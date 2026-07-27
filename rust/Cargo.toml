@@ -3,6 +3,7 @@ name = "chip8"
 version = "0.1.0"
 edition = "2021"
 rust-version = "1.75"
+default-run = "chip8"
 description = "CHIP-8 interpreter with an SDL2 front end, ported from the JavaScript version"
 license = "MIT"
 publish = false

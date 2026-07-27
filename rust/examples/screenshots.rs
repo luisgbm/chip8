@@ -23,15 +23,21 @@ use chip8::programs::BUILTIN_PROGRAMS;
 use chip8::theme;
 use chip8::video::{Video, PIXEL_SIZE, WINDOW_HEIGHT, WINDOW_WIDTH};
 
-/// How long each program is run before its picture is taken, in frames.
+/// How long a program is run before its picture is taken, in frames.
 const SETTLE_FRAMES: u32 = 90;
 
-/// The programs worth a picture, and the key held down while they run.
-const SHOTS: &[(&str, Option<u8>)] = &[
-    ("IBM Logo", None),
-    ("Space Invaders", Some(0x5)),
-    ("Pong", None),
-    ("Computer", None),
+/// A key held down for a number of frames. `None` holds nothing.
+type Segment = (Option<u8>, u32);
+
+/// The programs worth a picture, and what is played on the keypad while they
+/// run.
+const SHOTS: &[(&str, &[Segment])] = &[
+    ("IBM Logo", &[(None, SETTLE_FRAMES)]),
+    ("Space Invaders", &[(Some(0x5), SETTLE_FRAMES)]),
+    ("Pong", &[(None, SETTLE_FRAMES)]),
+    ("Computer", &[(None, SETTLE_FRAMES)]),
+    // Walk up to the pit, jump, then coast: caught halfway across.
+    ("Leap", &[(Some(0x6), 36), (Some(0x5), 2), (None, 14)]),
 ];
 
 fn main() -> Result<()> {
@@ -62,7 +68,7 @@ fn main() -> Result<()> {
     menu.render(&mut video);
     save(&video, &output.join("menu-file.png"))?;
 
-    for &(name, key) in SHOTS {
+    for &(name, script) in SHOTS {
         let program = BUILTIN_PROGRAMS
             .iter()
             .find(|program| program.name == name)
@@ -71,18 +77,22 @@ fn main() -> Result<()> {
         let mut chip8 = Chip8::with_seed(0xC81C_8C81_C8C8_1C81);
         chip8.load(program.rom)?;
 
-        if let Some(key) = key {
-            chip8.keypad_mut().set_pressed(key, true);
-        }
-
-        for _ in 0..SETTLE_FRAMES {
-            // Programs that run off the end of their code are still worth a
-            // picture of what they drew.
-            if chip8.step_many(program.cycles_per_frame).is_err() {
-                break;
+        'script: for &(key, frames) in script {
+            for candidate in 0x0..=0xF {
+                chip8
+                    .keypad_mut()
+                    .set_pressed(candidate, Some(candidate) == key);
             }
 
-            chip8.tick_timers();
+            for _ in 0..frames {
+                // Programs that run off the end of their code are still worth a
+                // picture of what they drew.
+                if chip8.step_many(program.cycles_per_frame).is_err() {
+                    break 'script;
+                }
+
+                chip8.tick_timers();
+            }
         }
 
         video.clear(theme::BACKGROUND);

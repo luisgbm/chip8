@@ -1,10 +1,10 @@
-"""One-off helper: turn the JS arrays in ../programs.txt into binary .ch8 files."""
+"""One-off helper: turn the JS arrays in ../../programs.txt into binary .ch8 files."""
 
 import re
 from pathlib import Path
 
-SRC = Path(__file__).resolve().parent.parent / "programs.txt"
-OUT = Path(__file__).resolve().parent / "roms"
+SRC = Path(__file__).resolve().parent.parent.parent / "programs.txt"
+OUT = Path(__file__).resolve().parent.parent / "roms"
 
 FILE_NAMES = {
     "ibm": "ibm_logo",

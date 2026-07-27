@@ -36,6 +36,7 @@
 //!
 //! See the crate README for the full list.
 
+pub mod asm;
 pub mod audio;
 pub mod cpu;
 pub mod font;
