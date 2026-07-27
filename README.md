@@ -11,3 +11,15 @@ According to [Wikipedia](https://en.wikipedia.org/wiki/CHIP-8),
 *Remember to use a modern browser and allow audio in the site's settings to able to listen to all the glorious beeps!*
 
 I put some more programs in the programs.txt file, you should be able to load them by editing the index.html file.
+
+## Rust port
+
+There is also a native port in [`rust/`](rust), written in Rust on top of SDL2.
+It bundles every program from `programs.txt` behind an intro screen, can load
+`.ch8` files from disk, and fixes a handful of bugs this JavaScript version
+carries — see [`rust/README.md`](rust/README.md).
+
+```sh
+cd rust
+cargo run --release
+```
