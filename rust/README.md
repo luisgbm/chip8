@@ -58,8 +58,25 @@ the JavaScript version used.
 
 ## Writing a program
 
-The port comes with an assembler, so programs can be written as text instead of
-hand-assembled bytes:
+The port comes with two ways to write one: an assembler, and a small C-like
+language called C8 that compiles down to the same instructions.
+
+### C8, the language
+
+```sh
+cargo run --bin c8c -- programs/leap.c8 roms/leap.ch8
+cargo run --bin c8c -- programs/leap.c8 roms/leap.ch8 --asm out.asm
+```
+
+C8 has `if`, `while`, `do`/`while`, `loop`, `goto`, functions and expressions,
+and nothing the machine cannot do — no types, no locals, no arguments, no `&&`.
+Variables are registers, and can be pinned to a particular one. `--asm` keeps
+the assembly the compiler wrote, which is the quickest way to see what a piece
+of source turns into.
+
+**[`programs/LANGUAGE.md`](programs/LANGUAGE.md) is the tutorial.**
+
+### The assembler
 
 ```sh
 cargo run --bin asm -- programs/leap.asm roms/leap.ch8
@@ -71,15 +88,20 @@ quickest way to see what an instruction turned into. It accepts the 35 original
 CHIP-8 opcodes and nothing else, so a program that assembles will run on any
 interpreter.
 
-**[`programs/TUTORIAL.md`](programs/TUTORIAL.md) is the place to start.** It
-builds a program that writes `ABC123` on the screen with the interpreter's
-built-in font, one instruction at a time, and ends with a syntax reference and
-the full opcode table.
+**[`programs/TUTORIAL.md`](programs/TUTORIAL.md)** builds a program that writes
+`ABC123` on the screen with the interpreter's built-in font, one instruction at
+a time, and ends with a syntax reference and the full opcode table.
 
-| Program                                    | What it is                          |
-|--------------------------------------------|-------------------------------------|
-| [`programs/abc123.asm`](programs/abc123.asm) | The tutorial's worked example, 34 bytes |
-| [`programs/leap.asm`](programs/leap.asm)   | *Leap*, the bundled game            |
+### The programs
+
+Both bundled programs are written twice, once in each language. Compiling the
+C8 and assembling the assembly produce identical files, and a test says so — so
+neither copy can drift from the other.
+
+| Program | What it is |
+|---------|------------|
+| [`programs/abc123.c8`](programs/abc123.c8) · [`.asm`](programs/abc123.asm) | The tutorials' worked example, 34 bytes |
+| [`programs/leap.c8`](programs/leap.c8) · [`.asm`](programs/leap.asm) | *Leap*, the bundled game |
 
 *Leap* is a side-on platformer: a floor with a pit in the middle, and a
 character who walks with `Q` and `E` and jumps with `W`. Land in the pit and he
@@ -127,8 +149,15 @@ The modules mirror the JavaScript files one for one.
 [`src/font.rs`](src/font.rs) and [`src/theme.rs`](src/theme.rs) have no
 counterpart: the browser drew the interface with HTML and CSS, so the port
 carries its own 5x7 bitmap font and palette. Neither has
-[`src/asm.rs`](src/asm.rs), the assembler, which is exposed as a binary by
-[`src/bin/asm.rs`](src/bin/asm.rs).
+[`src/asm.rs`](src/asm.rs), the assembler, exposed as a binary by
+[`src/bin/asm.rs`](src/bin/asm.rs), nor [`src/lang/`](src/lang), the C8
+compiler, exposed by [`src/bin/c8c.rs`](src/bin/c8c.rs).
+
+The compiler is four files: [`lexer.rs`](src/lang/lexer.rs),
+[`parser.rs`](src/lang/parser.rs) and [`codegen.rs`](src/lang/codegen.rs), read
+in that order, plus [`mod.rs`](src/lang/mod.rs) which strings them together. It
+emits assembly text and hands it to `src/asm.rs`, so there is only one
+instruction encoder in the repository and only one set of tests for it.
 
 Everything — the emulator screen, the menu, the status bar — is drawn into one
 `0x00RRGGBB` buffer at window resolution and uploaded to a single streaming
@@ -168,8 +197,10 @@ cargo test
 the behaviour the JavaScript version got wrong,
 [`tests/programs.rs`](tests/programs.rs) loads and runs every bundled program,
 [`tests/asm.rs`](tests/asm.rs) checks the committed ROMs against their assembly,
-and [`tests/leap.rs`](tests/leap.rs) plays the game with scripted key presses
-and reads the result out of the framebuffer.
+[`tests/lang.rs`](tests/lang.rs) checks that compiling the C8 source of a
+program gives the same bytes as assembling its assembly, and
+[`tests/leap.rs`](tests/leap.rs) plays the game with scripted key presses and
+reads the result out of the framebuffer.
 
 ## Differences from the JavaScript version
 

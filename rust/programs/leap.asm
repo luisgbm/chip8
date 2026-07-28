@@ -12,6 +12,9 @@
 ;
 ;  Assemble with:  cargo run --bin asm -- programs/leap.asm roms/leap.ch8
 ;
+;  There is a second copy of this program in programs/leap.c8, written in the
+;  C8 language, which compiles to these exact bytes.  See programs/LANGUAGE.md.
+;
 ;  Registers
 ;      V0, V1  scratch
 ;      V2      player x
@@ -128,8 +131,7 @@ falling:
     XOR  VB, V0                 ; stretches the jump out without making it
     SE   VB, 0                  ; any higher
     JP   no_gravity
-    LD   V0, MAX_VY
-    SE   V5, V0
+    SE   V5, MAX_VY
     ADD  V5, 1
 no_gravity:
 

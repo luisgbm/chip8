@@ -19,9 +19,11 @@ It bundles every program from `programs.txt` behind an intro screen, can load
 `.ch8` files from disk, and fixes a handful of bugs this JavaScript version
 carries — see [`rust/README.md`](rust/README.md).
 
-It also comes with an assembler and a game written with it, *Leap*. If you want
-to write a CHIP-8 program yourself, start at
-[`rust/programs/TUTORIAL.md`](rust/programs/TUTORIAL.md).
+It also comes with two ways to write CHIP-8 programs — an assembler, and a
+small C-like language called C8 that compiles to CHIP-8 — and a game written
+with both, *Leap*. If you want to write a program yourself, start at
+[`rust/programs/LANGUAGE.md`](rust/programs/LANGUAGE.md) for the language or
+[`rust/programs/TUTORIAL.md`](rust/programs/TUTORIAL.md) for the assembler.
 
 ```sh
 cd rust

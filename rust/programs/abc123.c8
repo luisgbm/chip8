@@ -1,0 +1,46 @@
+// =============================================================================
+//  ABC123 - the worked example from LANGUAGE.md
+// =============================================================================
+//
+//  Writes ABC123 across the middle of the screen using the interpreter's own
+//  font, then stops.  Every glyph in that font is five rows tall and four
+//  columns wide, and there is one for each of the sixteen hex digits, which is
+//  exactly the six characters this needs.
+//
+//  Compile with:  cargo run --bin c8c -- programs/abc123.c8 roms/abc123.ch8
+//
+//  This is the same program as programs/abc123.asm, and compiles to the same
+//  bytes.  Read them side by side to see what the compiler does for you.
+// =============================================================================
+
+const LENGTH  = 6;      // how many characters there are to draw
+const CHAR_H  = 5;      // every glyph in the built in font is five rows tall
+const SPACING = 5;      // four columns wide, so this leaves a one column gap
+const LEFT    = 17;     // (64 - (LENGTH * SPACING - 1)) / 2, near enough
+const TOP     = 13;     // (32 - CHAR_H) / 2, near enough
+
+var x @ V2, y @ V3;     // where the next glyph goes
+var at @ V4;            // how far along the message we are
+
+// The message, one hex digit per byte.  A, B and C really are the digits
+// $A, $B and $C, which is why the font has glyphs for them.
+byte message[] = { $A, $B, $C, 1, 2, 3 };
+
+fn main() {
+    clear();
+
+    x = LEFT;
+    y = TOP;
+    at = 0;
+
+    do {
+        // `message[at]` reads a byte out of memory and `font` turns a digit
+        // into the address of its glyph, so this draws one character.
+        draw(x, y, font(message[at]));
+
+        x += SPACING;           // move along for the next one
+        at += 1;
+    } while (at != LENGTH);
+
+    loop {}                     // a CHIP-8 program has nowhere to return to
+}

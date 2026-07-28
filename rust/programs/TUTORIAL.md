@@ -425,6 +425,11 @@ comparisons, biased values for velocity, `CALL` for subroutines, XOR for moving
 a sprite around, and hand drawn letter sprites for the words the font does not
 have.
 
+Then read [`leap.c8`](leap.c8), which is the same game written in
+[C8](LANGUAGE.md), the C-like language that compiles to these instructions.
+Compiling it produces the very same ROM, so it is a line by line answer to
+"what does this assembly look like in a language with `if` and `while`".
+
 The other thing worth doing is reading the interpreter itself.
 [`src/cpu.rs`](../src/cpu.rs) is one `match` over the opcode, and every
 instruction in the table above is about three lines of Rust.

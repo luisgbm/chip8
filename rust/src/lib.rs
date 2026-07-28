@@ -41,6 +41,7 @@ pub mod audio;
 pub mod cpu;
 pub mod font;
 pub mod keypad;
+pub mod lang;
 pub mod menu;
 pub mod programs;
 pub mod theme;

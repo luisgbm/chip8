@@ -8,6 +8,9 @@
 ;  exactly the six characters this needs.
 ;
 ;  Assemble with:  cargo run --bin asm -- programs/abc123.asm roms/abc123.ch8
+;
+;  There is a second copy of this program in programs/abc123.c8, written in the
+;  C8 language, which compiles to these exact bytes.  See programs/LANGUAGE.md.
 ; =============================================================================
 
 LENGTH      = 6         ; how many characters there are to draw
