@@ -1,4 +1,4 @@
-//! The buzzer. Ported from `audio.js`.
+//! The buzzer. Ported from `js/audio.js`.
 //!
 //! CHIP-8 has exactly one sound: while the sound timer is non-zero, a tone
 //! plays. The JavaScript version connected and disconnected a 400 Hz square

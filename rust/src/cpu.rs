@@ -1,5 +1,5 @@
 //! The CHIP-8 virtual machine: memory, registers, timers and the instruction
-//! decoder. Ported from `chip8.js`.
+//! decoder. Ported from `js/chip8.js`.
 //!
 //! The interpreter is completely free of I/O: it owns a [`Keypad`] and a
 //! monochrome framebuffer that the front end reads once a frame, and it never

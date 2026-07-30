@@ -1,4 +1,4 @@
-//! Window and software framebuffer. Ported from `video.js`, with the drawing
+//! Window and software framebuffer. Ported from `js/video.js`, with the drawing
 //! helpers the menu needs on top.
 //!
 //! Everything — the emulator's 64x32 screen, the menu, the status bar — is

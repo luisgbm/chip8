@@ -1,4 +1,4 @@
-//! The sixteen key hexadecimal keypad. Ported from `keyboard.js`.
+//! The sixteen key hexadecimal keypad. Ported from `js/keyboard.js`.
 
 use sdl2::keyboard::Keycode;
 

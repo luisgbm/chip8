@@ -1,9 +1,9 @@
 //! The intro screen: pick one of the bundled programs, or load one from disk.
 //!
 //! The JavaScript version had no interface at all — the program was an array
-//! literal inside `index.html`, and running anything else meant editing the
-//! page. Here every program from `programs.txt` is on a list, and a file can be
-//! typed in, pasted or dropped onto the window.
+//! literal inside `js/index.html`, and running anything else meant editing the
+//! page. Here every program from `js/programs.txt` is on a list, and a file can
+//! be typed in, pasted or dropped onto the window.
 
 use std::path::PathBuf;
 

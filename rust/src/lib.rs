@@ -1,16 +1,16 @@
-//! A CHIP-8 interpreter, ported from the JavaScript version in the repository
-//! root.
+//! A CHIP-8 interpreter, ported from the JavaScript version in the `js`
+//! directory at the repository root.
 //!
 //! The module layout follows the original files:
 //!
-//! | JavaScript    | Rust                                          |
-//! |---------------|-----------------------------------------------|
-//! | `chip8.js`    | [`cpu`]                                       |
-//! | `keyboard.js` | [`keypad`]                                    |
-//! | `video.js`    | [`video`]                                     |
-//! | `audio.js`    | [`audio`]                                     |
-//! | `index.html`  | `main.rs` and [`menu`]                        |
-//! | `programs.txt`| [`programs`] and the `roms/` directory        |
+//! | JavaScript       | Rust                                       |
+//! |------------------|--------------------------------------------|
+//! | `js/chip8.js`    | [`cpu`]                                    |
+//! | `js/keyboard.js` | [`keypad`]                                 |
+//! | `js/video.js`    | [`video`]                                  |
+//! | `js/audio.js`    | [`audio`]                                  |
+//! | `js/index.html`  | `main.rs` and [`menu`]                     |
+//! | `js/programs.txt`| [`programs`] and the `roms/` directory     |
 //!
 //! [`cpu`] is where the interpreter lives, and it is deliberately free of I/O:
 //! it owns its memory, registers and framebuffer, and the front end reads them

@@ -1,10 +1,10 @@
 # chip8 — Rust
 
-A Rust port of the JavaScript CHIP-8 interpreter in the repository root, running
-on SDL2 instead of the browser.
+A Rust port of the JavaScript CHIP-8 interpreter in [`../js`](../js), running on
+SDL2 instead of the browser.
 
 It starts on an intro screen that lists every program from
-[`../programs.txt`](../programs.txt), compiled into the executable, plus two
+[`../js/programs.txt`](../js/programs.txt), compiled into the executable, plus two
 written for this port in [`programs/`](programs), and can also run a `.ch8` file
 from disk. The interpreter itself lives in [`src/cpu.rs`](src/cpu.rs) and has no
 I/O in it at all: it owns its memory, registers and framebuffer, and the front
@@ -53,7 +53,7 @@ runs 60 frames a second, so ten instructions per frame is 600 Hz, which is what
 the JavaScript version used.
 
 > Pong is two player: `1` and `Q` move the left paddle, `4` and `R` the right
-> one. `index.html` named `1`/`4` and `F`/`Z` because its keypad was misnumbered
+> one. `js/index.html` named `1`/`4` and `F`/`Z` because its keypad was misnumbered
 > — see below.
 
 ## Writing a program
@@ -139,12 +139,12 @@ The modules mirror the JavaScript files one for one.
 
 | JavaScript                            | Rust                                     |
 |---------------------------------------|------------------------------------------|
-| `chip8.js`                            | [`src/cpu.rs`](src/cpu.rs)               |
-| `keyboard.js`                         | [`src/keypad.rs`](src/keypad.rs)         |
-| `video.js`                            | [`src/video.rs`](src/video.rs)           |
-| `audio.js`                            | [`src/audio.rs`](src/audio.rs)           |
-| `index.html`                          | [`src/main.rs`](src/main.rs) and [`src/menu.rs`](src/menu.rs) |
-| `programs.txt`                        | [`src/programs.rs`](src/programs.rs) and [`roms/`](roms) |
+| [`../js/chip8.js`](../js/chip8.js)       | [`src/cpu.rs`](src/cpu.rs)            |
+| [`../js/keyboard.js`](../js/keyboard.js) | [`src/keypad.rs`](src/keypad.rs)      |
+| [`../js/video.js`](../js/video.js)       | [`src/video.rs`](src/video.rs)        |
+| [`../js/audio.js`](../js/audio.js)       | [`src/audio.rs`](src/audio.rs)        |
+| [`../js/index.html`](../js/index.html)   | [`src/main.rs`](src/main.rs) and [`src/menu.rs`](src/menu.rs) |
+| [`../js/programs.txt`](../js/programs.txt) | [`src/programs.rs`](src/programs.rs) and [`roms/`](roms) |
 
 [`src/font.rs`](src/font.rs) and [`src/theme.rs`](src/theme.rs) have no
 counterpart: the browser drew the interface with HTML and CSS, so the port
@@ -165,7 +165,7 @@ texture once a frame, which is the same shape the JavaScript version had with
 its canvas.
 
 The programs from the JavaScript version are the byte arrays in
-[`../programs.txt`](../programs.txt), converted once into the `.ch8` files in
+[`../js/programs.txt`](../js/programs.txt), converted once into the `.ch8` files in
 [`roms/`](roms); the two written for this port are assembled from
 [`programs/`](programs). Either way they are compiled into the executable with
 `include_bytes!`.

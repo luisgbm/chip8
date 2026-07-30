@@ -1,5 +1,5 @@
 //! Entry point: the intro screen, the emulator loop and the glue between the
-//! interpreter and SDL2. Ported from the inline script in `index.html`.
+//! interpreter and SDL2. Ported from the inline script in `js/index.html`.
 
 use std::fs;
 use std::path::{Path, PathBuf};
