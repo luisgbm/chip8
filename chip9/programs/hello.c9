@@ -1,0 +1,50 @@
+// HELLO WORLD, written with the built in font.
+//
+// CHIP-8's font stops at F, because its sixteen glyphs are the sixteen
+// hexadecimal digits. CHIP-9 carries that idea on into base thirty six: the
+// font runs 0 to 9 and then A to Z, so `font(x)` reaches every letter. The
+// first sixteen glyphs are byte for byte the CHIP-8 ones, which is why every
+// CHIP-8 program still draws exactly what it used to.
+//
+// Four columns is not much room for an alphabet. O is the same shape as 0, S
+// the same as 5, and W is M upside down. That is the price of the width, and
+// it is why HELLO WORLD reads with a zero in it.
+
+const GLYPH_W = 5;          // four pixels of glyph and one of gap
+const LEFT    = 17;         // ten glyphs wide, so this centres a five letter word
+const TOP     = 10;
+const BOTTOM  = 18;
+
+var x @ V2, y @ V3;         // where the next glyph goes
+
+// Both words, one after the other, so one function can write either.
+byte message[] = { 'H', 'E', 'L', 'L', 'O', 'W', 'O', 'R', 'L', 'D' };
+
+fn main() {
+    clear();
+
+    y = TOP;
+    write(0, 5);
+
+    y = BOTTOM;
+    write(5, 5);
+
+    loop {}                 // nothing left to do, and nowhere to return to
+}
+
+// Writes `count` letters starting at `from`, leaving `x` past the last one.
+// `from` and `count` arrive in registers; `at` and `letter` are borrowed for
+// as long as this function runs and handed back when it ends.
+fn write(from, count) {
+    var at, letter;
+
+    x = LEFT;
+    at = 0;
+
+    while (at < count) {
+        letter = message[from + at];
+        draw(x, y, font(letter));
+        x += GLYPH_W;
+        at += 1;
+    }
+}

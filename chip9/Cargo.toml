@@ -1,0 +1,25 @@
+[package]
+name = "chip9"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+default-run = "chip9"
+description = "CHIP-9: a CHIP-8 with multiply, divide, a data stack and a full alphabet"
+license = "MIT"
+publish = false
+
+[dependencies]
+anyhow = "1.0"
+sdl2 = "0.38"
+
+[dev-dependencies.image]
+version = "0.25"
+default-features = false
+features = ["png"]
+
+[profile.dev]
+opt-level = 2
+
+[profile.release]
+codegen-units = 1
+lto = true

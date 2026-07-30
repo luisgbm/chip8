@@ -1,7 +1,8 @@
 # chip8
 
 A CHIP-8 interpreter/emulator, written twice: once in JavaScript for the
-browser, and once in Rust on top of SDL2.
+browser, and once in Rust on top of SDL2 — and then extended into a machine of
+its own.
 
 According to [Wikipedia](https://en.wikipedia.org/wiki/CHIP-8),
 
@@ -38,3 +39,25 @@ small C-like language called C8 that compiles to CHIP-8 — and a game written
 with both, *Leap*. If you want to write a program yourself, start at
 [`rust/programs/LANGUAGE.md`](rust/programs/LANGUAGE.md) for the language or
 [`rust/programs/TUTORIAL.md`](rust/programs/TUTORIAL.md) for the assembler.
+
+## [`chip9/`](chip9) — the extension
+
+CHIP-8 with the corners knocked off: a fork of the Rust port that adds the four
+things a CHIP-8 program most often wishes it had, while running every existing
+CHIP-8 program unchanged.
+
+```sh
+cd chip9
+cargo run --release
+```
+
+* **Multiply and divide** — `MUL` and `DIV`, with the overflow and the
+  remainder in `VF`.
+* **A data stack** — sixty-four bytes reached with `PUSH` and `POP`, separate
+  from the call stack, so a subroutine can finally call itself.
+* **A font that reaches `Z`** — thirty six glyphs instead of sixteen, so
+  `HELLO WORLD` needs no sprites of its own.
+* **C9** — the C-like language grown `&&`, `||`, function arguments, return
+  values and block-scoped local variables.
+
+See [`chip9/README.md`](chip9/README.md).

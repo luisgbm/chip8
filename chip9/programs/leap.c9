@@ -1,0 +1,302 @@
+// =============================================================================
+//  LEAP - a platform game for the CHIP-8
+// =============================================================================
+//
+//  A floor runs across the screen with a pit in the middle.  Walk up to the
+//  pit, jump it, and try not to drop in.  Fall and the screen reads GAME OVER
+//  for three seconds before the game starts again.
+//
+//      keypad 4 (host Q) ... walk left
+//      keypad 6 (host E) ... walk right
+//      keypad 5 (host W) ... jump
+//
+//  Compile with:  cargo run --bin c9c -- programs/leap.c9 roms/leap.ch8
+//
+//  This is the same program as programs/leap.asm, and compiles to the same
+//  bytes.  Read them side by side to see what the compiler does for you.
+//
+//  Vertical position is kept in half pixels so that a jump can arc smoothly
+//  over sixteen ticks instead of snapping between whole pixels.
+// =============================================================================
+
+// ---- pacing -----------------------------------------------------------------
+const TICK      = 2;        // frames per game tick, so the game runs at 30 Hz
+const OVER_TIME = 180;      // frames the game over screen stays up, three seconds
+
+// ---- the world --------------------------------------------------------------
+const FLOOR_Y = 26;         // top row of the floor
+const HOLE_X  = 28;         // leftmost column of the pit
+const HOLE_W  = 8;          // and how wide it is, so 28..35, the middle of 0..63
+
+// ---- states held in `state` -------------------------------------------------
+const IN_AIR   = 0;
+const ON_FLOOR = 1;
+const IN_PIT   = 2;         // below floor level with walls either side, no way out
+
+// ---- the player -------------------------------------------------------------
+const PLAYER_H  = 6;
+const PLAYER_W  = 5;        // the sprite is 8 wide but only 5 columns are used
+const FOOT_X    = 2;        // the column the player is balanced on
+const START_X   = 4;
+const MAX_X     = 64 - PLAYER_W;
+const START_Y   = 20;       // FLOOR_Y - PLAYER_H
+const FLOOR_SUB = 40;       // START_Y * 2
+const DEAD_SUB  = 64;       // once y reaches 32 the player is off the screen
+const HOLE_MIN  = HOLE_X - FOOT_X;
+
+// The player has to be somewhere in here to fit down the pit without the
+// sprite overlapping, and so rubbing out, the lip on either side.
+const PIT_LEFT  = HOLE_X;
+const PIT_RIGHT = HOLE_X + HOLE_W - PLAYER_W;
+
+// ---- velocities, all biased by 8 so they can be negative --------------------
+const ZERO_VY = 8;          // not moving
+const JUMP_VY = 4;          // four half pixels per tick upwards
+const FALL_VY = 9;          // the nudge given when walking off the edge
+const MAX_VY  = 12;         // terminal velocity, two pixels per tick
+
+// ---- keys -------------------------------------------------------------------
+const KEY_LEFT  = 4;
+const KEY_RIGHT = 6;
+const KEY_JUMP  = 5;
+
+const TEXT_Y = 13;
+
+
+// =============================================================================
+//  Registers
+// =============================================================================
+//
+//  V0 and V1 are the compiler's scratch, so anything worked out along the way
+//  lands there.  Everything else is pinned by hand, because this program cares
+//  which register a value lives in: `fx` and `fy` deliberately share the
+//  scratch registers, since draw_scene has nothing else on the go.
+
+var x @ V2;                 // player x
+var y @ V3;                 // player y, in pixels, which is what gets drawn
+var ysub @ V4;              // player y, in half pixels, which the physics uses
+var vy @ V5;                // vertical velocity, biased so that 8 is still
+var state @ V6;             // IN_AIR, ON_FLOOR or IN_PIT
+var sx @ V7, sy @ V8;       // where the player sprite currently is on screen
+var hole @ VA;              // result of over_hole
+var grav @ VB;              // gravity pulls on every other tick, this says which
+var k @ VC;                 // key being tested
+var tx @ VD, ty @ VE;       // scratch for drawing text
+
+var fx @ V0, fy @ V1;       // scratch for drawing the floor
+
+
+// =============================================================================
+//  Start of a life
+// =============================================================================
+fn new_game() {
+    draw_scene();
+
+    x = START_X;
+    y = START_Y;
+    ysub = FLOOR_SUB;
+    vy = ZERO_VY;
+    state = ON_FLOOR;
+    grav = 0;
+
+    sx = x;
+    sy = y;
+    draw(sx, sy, player);
+
+// =============================================================================
+//  One tick of the game
+// =============================================================================
+tick:
+    if (delay != 0) goto tick;      // the delay timer paces the whole game
+    delay = TICK;
+
+    // ---- input --------------------------------------------------------------
+    k = KEY_LEFT;
+    if (pressed(k)) move_left();
+    k = KEY_RIGHT;
+    if (pressed(k)) move_right();
+    k = KEY_JUMP;
+    if (pressed(k)) try_jump();
+
+    // ---- physics ------------------------------------------------------------
+    if (state != ON_FLOOR) goto falling;
+
+    over_hole();                    // standing: is there still floor underfoot?
+    if (hole != 1) goto draw_step;
+    state = IN_AIR;                 // no, so step off the edge
+    vy = FALL_VY;
+    grav = 0;
+    goto draw_step;
+
+falling:
+    grav ^= 1;                      // gravity pulls on every other tick, which
+    if (grav != 0) goto no_gravity; // stretches the jump out without making it
+    if (vy != MAX_VY) vy += 1;      // any higher
+no_gravity:
+
+    // Subtracting sets the flag, and the compiler reads it back rather than
+    // working the difference out twice.
+    if (vy >= ZERO_VY) goto going_down;
+
+    ysub -= ZERO_VY - vy;           // going up by ZERO_VY - vy half pixels
+    goto after_move;
+
+going_down:
+    ysub += vy - ZERO_VY;
+    if (state != IN_PIT) goto check_floor;  // once down the pit there is
+    goto check_dead;                        // nothing left to land on
+
+check_floor:
+    if (ysub < FLOOR_SUB) goto after_move;  // has the player reached the floor?
+    over_hole();
+    if (hole != 0) goto enter_pit;
+
+    ysub = FLOOR_SUB;               // landed, so stand back up on the floor
+    vy = ZERO_VY;
+    state = ON_FLOOR;
+    grav = 0;
+    goto after_move;
+
+enter_pit:                          // past the lip of the pit, so that is that
+    state = IN_PIT;
+    if (x >= PIT_LEFT) goto pit_right;  // slide the player fully inside the pit,
+    x = PIT_LEFT;                       // so that on the way down the sprite
+    goto check_dead;                    // never overlaps, and so rubs out, the
+pit_right:                              // floor either side
+    if (x < PIT_RIGHT) goto check_dead;
+    x = PIT_RIGHT;
+
+check_dead:
+    if (ysub < DEAD_SUB) goto after_move;
+    goto game_over;
+
+after_move:
+    y = ysub >> 1;                  // half pixels back to pixels
+
+    // ---- draw, but only when the player actually moved ----------------------
+draw_step:
+    if (x == sx) goto same_x;
+    goto move_sprite;
+same_x:
+    if (y != sy) goto move_sprite;
+    goto tick;
+
+move_sprite:
+    draw(sx, sy, player);           // rub the player out
+    sx = x;
+    sy = y;
+    draw(sx, sy, player);           // and draw it again where it is now
+    goto tick;
+
+// =============================================================================
+//  Game over
+// =============================================================================
+game_over:
+    clear();
+    sound = 12;
+    draw_text();
+    delay = OVER_TIME;
+over_wait:
+    if (delay != 0) goto over_wait;
+    goto new_game;
+}
+
+
+// =============================================================================
+//  Subroutines
+// =============================================================================
+
+// Walk one pixel left, unless already against the edge or down the pit.
+fn move_left() {
+    if (state == IN_PIT) return;
+    if (x == 0) return;
+    x -= 1;
+}
+
+// Walk one pixel right, unless already against the edge or down the pit.
+fn move_right() {
+    if (state == IN_PIT) return;
+    if (x == MAX_X) return;
+    x += 1;
+}
+
+// Jump, but only from solid ground.
+fn try_jump() {
+    if (state != ON_FLOOR) return;
+    vy = JUMP_VY;
+    state = IN_AIR;
+    grav = 0;
+    sound = 2;
+}
+
+// `hole` = 1 when the player's middle column is over the pit, that is when
+// x + FOOT_X is somewhere in HOLE_X .. HOLE_X + HOLE_W - 1.
+fn over_hole() {
+    hole = 0;
+    if (x < HOLE_MIN) return;               // not past the near edge yet
+    if (x - HOLE_MIN >= HOLE_W) return;     // already past the far edge
+    hole = 1;
+}
+
+// Clear the screen and lay down the floor, then punch the pit back out of it.
+fn draw_scene() {
+    clear();
+
+    // Hoisted out of the loop by hand: nothing inside moves `I`, so the
+    // compiler drops the reload the `draw` below would otherwise make.
+    I = floor;
+    fy = FLOOR_Y;
+    fx = 0;
+    do {
+        draw(fx, fy, floor);
+        fx += 8;
+    } while (fx != 64);
+
+    fx = HOLE_X;
+    draw(fx, fy, floor);
+}
+
+// GAME OVER, in letters the built in font does not have.
+fn draw_text() {
+    ty = TEXT_Y;
+    tx = 7;
+    draw(tx, ty, char_g);
+    tx = 13;
+    draw(tx, ty, char_a);
+    tx = 19;
+    draw(tx, ty, char_m);
+    tx = 25;
+    draw(tx, ty, char_e);
+    tx = 34;
+    draw(tx, ty, char_o);
+    tx = 40;
+    draw(tx, ty, char_v);
+    tx = 46;
+    draw(tx, ty, char_e);
+    tx = 52;
+    draw(tx, ty, char_r);
+}
+
+
+// =============================================================================
+//  Sprites
+// =============================================================================
+
+sprite player = {           // .###.
+    $70,                    // .###.
+    $70,                    // #####
+    $F8,                    // .###.
+    $70,                    // .#.#.
+    $50,                    // .#.#.
+    $50
+};
+
+sprite floor = { $FF, $FF };
+
+sprite char_g = { $70, $80, $B8, $88, $70 };
+sprite char_a = { $70, $88, $F8, $88, $88 };
+sprite char_m = { $88, $D8, $A8, $88, $88 };
+sprite char_e = { $F8, $80, $F0, $80, $F8 };
+sprite char_o = { $70, $88, $88, $88, $70 };
+sprite char_v = { $88, $88, $88, $50, $20 };
+sprite char_r = { $F0, $88, $F0, $A0, $90 };

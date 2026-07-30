@@ -1,0 +1,55 @@
+// The seven times table, worked out with CHIP-9's multiply and printed by a
+// function that calls itself.
+//
+// CHIP-8 has no multiply, no divide and no way to put a value anywhere but in
+// a register, so a table like this meant a loop of additions and a fixed slot
+// for every intermediate value. CHIP-9 adds `MUL` and `DIV`, and a data stack
+// that `PUSH` and `POP` reach, which between them are enough for `show` below
+// to call itself once per digit.
+
+const GLYPH_W  = 5;         // four pixels of glyph and one of gap
+const ROW_H    = 7;
+const COLUMN_W = 32;
+const ROWS     = 4;
+const TABLE    = 7;
+
+var cx @ V2, cy @ V3;       // where the next glyph goes
+var n  @ V4;                // which row of the table this is
+
+fn main() {
+    clear();
+
+    n = 1;
+    while (n <= 8) {
+        // Four rows down, then across to the second column.
+        cx = ((n - 1) / ROWS) * COLUMN_W + 1;
+        cy = ((n - 1) % ROWS) * ROW_H + 2;
+
+        glyph(n);
+        glyph('X');
+        glyph(TABLE);
+
+        cx += GLYPH_W;      // a space where an `=` would go
+        show(n * TABLE);
+
+        n += 1;
+    }
+
+    loop {}
+}
+
+// Draws one glyph and steps the cursor on.
+fn glyph(index) {
+    draw(cx, cy, font(index));
+    cx += GLYPH_W;
+}
+
+// Draws a number, most significant digit first.
+//
+// The digits come out of the value backwards, so the only way to print them
+// forwards is to reach the end before drawing anything. Each call keeps its
+// own `value` on the data stack while the call underneath it runs.
+fn show(value) {
+    if (value >= 10) show(value / 10);
+    glyph(value % 10);
+}
